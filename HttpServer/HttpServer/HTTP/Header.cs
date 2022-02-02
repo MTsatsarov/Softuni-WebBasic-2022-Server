@@ -4,6 +4,11 @@ namespace HttpServer.HTTP
 {
     public class Header
     {
+        public const string ContentType = "Content-Type";
+        public const string ContentLength = "Content-Length";
+        public const string Date = "Date";
+        public const string Location = "Location";
+        public const string Server = "Server";
         public Header(string _name, string _value)
         {
             Name = _name;

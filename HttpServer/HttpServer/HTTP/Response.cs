@@ -19,8 +19,8 @@ namespace SUHttpServer.HTTP
         public Response (StatusCode statusCode)
         {
             StatusCode = statusCode;
-            Headers.Add("Server", "SoftUni Server");
-            Headers.Add("Date", $"{DateTime.UtcNow:r}");
+            Headers.Add(Header.Server, "SoftUni Server");
+            Headers.Add(Header.Date, $"{DateTime.UtcNow:r}");
         }
     }
 }
