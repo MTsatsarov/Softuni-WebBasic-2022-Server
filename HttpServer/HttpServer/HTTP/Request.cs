@@ -48,10 +48,10 @@ namespace SUHttpServer.HTTP
                 }
                 var parts = line.Split(":");
 
-                if (parts.Length != 2)
-                {
-                    throw new InvalidOperationException("Request headers are not valid");
-                }
+                //if (parts.Length != 2)
+                //{
+                //    throw new InvalidOperationException("Request headers are not valid");
+                //}
                 headers.Add(parts[0], parts[1].Trim());
 
             }

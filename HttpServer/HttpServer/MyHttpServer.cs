@@ -1,4 +1,5 @@
 ﻿using SUHttpServer.HTTP;
+using SUHttpServer.Routing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +15,25 @@ namespace HttpServer
         private readonly IPAddress ipAddress;
         private readonly int port;
         private readonly TcpListener serverListner;
-
-        public MyHttpServer(string _ipAddress, int _port)
+        private readonly RoutingTable routingTable;
+        public MyHttpServer(string _ipAddress, int _port, Action<IRoutingTable> routingTableConfiguration)
         {
             ipAddress = IPAddress.Parse(_ipAddress);
             port = _port;
-
+            routingTableConfiguration(this.routingTable = new RoutingTable());
             serverListner = new TcpListener(ipAddress, port);
+        }
+
+        public MyHttpServer(int port, Action<IRoutingTable> routingTable) 
+            : this("127.0.0.1", port, routingTable)
+        {
+
+        }
+
+        public MyHttpServer(Action<IRoutingTable> routingTable) 
+            : this(8080, routingTable)
+        {
+
         }
 
         public void Start()
@@ -34,29 +47,27 @@ namespace HttpServer
 
                 var connection = serverListner.AcceptTcpClient();
                 var networkStream = connection.GetStream();
-              var strRequest =   ReadRequest(networkStream);
-                Request request = Request.Parse(strRequest);
+                var strRequest = ReadRequest(networkStream);
                 Console.WriteLine(strRequest);
+                Request request = Request.Parse(strRequest);
 
-                WriteResponse(networkStream, "Hello world");
+                var response = this.routingTable.MatchRequest(request);
+
+
+                WriteResponse(networkStream, response);
 
                 connection.Close();
 
             }
         }
 
-        private static void WriteResponse(NetworkStream networkStream, string content)
+        private static void WriteResponse(NetworkStream networkStream, Response response)
         {
-            string response = $@"HTTP/1.1 200 OK
-Content-Type: text/plain; charset=UTF-8
-Content-Length: {content.Length}
-
-{content}";
-            var responseBytes = Encoding.UTF8.GetBytes(response);
+            var responseBytes = Encoding.UTF8.GetBytes(response.ToString());
             networkStream.Write(responseBytes, 0, responseBytes.Length);
         }
 
-        private string ReadRequest (NetworkStream networkStream)
+        private string ReadRequest(NetworkStream networkStream)
         {
             byte[] buffer = new byte[1024];
             StringBuilder request = new StringBuilder();
@@ -64,10 +75,10 @@ Content-Length: {content.Length}
 
             do
             {
-              int  bytesRead = networkStream.Read(buffer, totalBytes, buffer.Length);
+                int bytesRead = networkStream.Read(buffer, totalBytes, buffer.Length);
 
                 totalBytes += bytesRead;
-                if (totalBytes> 10 * 1024)
+                if (totalBytes > 10 * 1024)
                 {
                     throw new InvalidOperationException("Request is too large");
                 }

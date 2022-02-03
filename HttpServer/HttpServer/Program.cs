@@ -1,5 +1,8 @@
 ﻿using HttpServer;
+using SUHttpServer.Responses;
 
-var server = new MyHttpServer("127.0.0.1", 8080);
+var server = new MyHttpServer(routes => routes.MapGet("/", new TextResponse("Hello from the server!"))
+.MapGet("/HTML", new HtmlResponse("<h1> HTML response <h1>"))
+.MapGet("/Redirect", new RediretResponse("https://softuni.org")));
 server.Start();
 
