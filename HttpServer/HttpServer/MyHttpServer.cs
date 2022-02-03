@@ -52,7 +52,10 @@ namespace HttpServer
                 Request request = Request.Parse(strRequest);
 
                 var response = this.routingTable.MatchRequest(request);
-
+                if (response.PreRenderAction != null)
+                {
+                    response.PreRenderAction(request, response);
+                }
 
                 WriteResponse(networkStream, response);
 
@@ -73,8 +76,11 @@ namespace HttpServer
             StringBuilder request = new StringBuilder();
             int totalBytes = 0;
 
-            do
+           
+            
+            while (networkStream.DataAvailable);
             {
+
                 int bytesRead = networkStream.Read(buffer, totalBytes, buffer.Length);
 
                 totalBytes += bytesRead;
@@ -84,7 +90,6 @@ namespace HttpServer
                 }
                 request.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
             }
-            while (networkStream.DataAvailable);
 
 
             return request.ToString();
